@@ -2,7 +2,7 @@
 import json, numpy as np, pandas as pd, analysis as A, analysis2 as B, re
 import re
 def norm(x): return re.sub(r"[\$\s\\]","",x)
-T=norm(open("paper/main.tex").read())
+T=norm(open("paper/main.tex").read()+open("paper/supplement.tex").read())
 N=json.load(open("res4/nums3.json")); H=json.load(open("paper/holm_all.json")); O=json.load(open("res4/opts.json")); CB={s:json.load(open(f"res4/cluster_boot_{s}.json")) for s in ("natural","capped")}
 fails=[]; n=0
 def s3(x,sign=False):

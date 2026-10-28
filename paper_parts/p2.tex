@@ -134,7 +134,7 @@ The comparator matters. Table~\ref{tab:eqlam} compares at equal $\lambda$: the o
 \caption{Equal-$\lambda$ comparison, oversample vs.\ naive intersectional penalty, logistic regression, 20 seeds. $\Delta$EO is the paired difference [95\% CI].}
 \label{tab:eqlam}
 \footnotesize
-\input{tab5_eqlam.tex}
+\resizebox{\columnwidth}{!}{\input{tab5_eqlam.tex}}
 \end{table}
 
 \textbf{Class rebalancing explains a large, setting-dependent share.} Table~\ref{tab:ctl} (exploratory). Aggregating with original $n_k$ or removing the noise leaves the effect unchanged. Duplicating only to balance \emph{labels} reproduces a share of the EO shift that depends on the setting: 49\% on the dense natural grid ($+0.029$ against $+0.059$), 75\% on the natural core grid ($+0.042$ against $+0.056$), and 90\% on the capped dense grid ($+0.018$ against $+0.020$, both within noise of zero). The paired difference (oversample $-$ label-balance) is $+0.030$ [$+0.027,+0.034$] in natural data (DP $-0.009$) and $+0.001$ [$-0.011,+0.015$] in capped data (DP $+0.002$), so in natural data a clear part of the shift is \emph{not} explained by label balance. Under Dirichlet $\alpha{=}1$ partitions label-balance gives about 90\% (Table~\ref{tab:dir}); at $\alpha{=}0.3$ it exceeds oversampling (EO $+0.042$ against $+0.012$). Label-only loss weights ($-0.006$, $+0.030$ core grid) and (group, label) weights ($-0.003$, $+0.027$) behave similarly. Re-weighting by \emph{group alone} is different: EO $-0.011$ [$-0.013,-0.009$] (natural dense; adjusted $p<0.001$) and $-0.011$ (capped dense; adjusted $p=0.003$) with DP $+0.001$ to $+0.002$. These are gains of about 0.01 EO.
