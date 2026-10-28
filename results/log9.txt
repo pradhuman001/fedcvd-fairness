@@ -1,0 +1,2 @@
+done res4/core_natural_b.csv 2030 s
+done res4/central_natural_b.csv 2314 s

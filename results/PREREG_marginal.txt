@@ -1,0 +1,5 @@
+Pre-registered before computing (2026-10-26 ~22:30 IST):
+Claim "an audit of both marginals would have flagged the sex-only model" is accepted only if, for the sex-only model (lambda=8, natural, rule q, post-suite preds, mean over seeds),
+ age-marginal DP gap >= 0.05  AND  >= 2x the age-marginal DP gap of the marginal-both model (lambda=8).
+Otherwise the paper says only "a sex-only audit alone passes it".
+Reference points: age-only penalty DPint 0.175; marginal-both DPint 0.031 (Table 2).

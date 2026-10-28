@@ -1,0 +1,10 @@
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/home/claude/fedfair/engine.py:137: RuntimeWarning: overflow encountered in multiply
+  gz = gz + lam * pen
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+done res4/eopost_capped.csv 574 s
+done res4/eopost_natural.csv 2384 s

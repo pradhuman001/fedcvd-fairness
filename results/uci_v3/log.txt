@@ -1,0 +1,137 @@
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+seed 42
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+seed 43
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 44
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/home/claude/fedfair/engine.py:86: RuntimeWarning: invalid value encountered in matmul
+  return X @ p["w"] + p["b"][0], None
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 45
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 46
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 47
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 48
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/home/claude/fedfair/engine.py:86: RuntimeWarning: invalid value encountered in matmul
+  return X @ p["w"] + p["b"][0], None
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 49
+seed 50
+seed 51
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 52
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 53
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+seed 54
+seed 55
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 56
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+seed 57
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+seed 58
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: overflow encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:49: RuntimeWarning: invalid value encountered in reduce
+  return umr_sum(a, axis, dtype, out, keepdims, initial, where)
+/home/claude/fedfair/engine.py:90: RuntimeWarning: invalid value encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+seed 59
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 60
+/home/claude/fedfair/engine.py:90: RuntimeWarning: overflow encountered in matmul
+  return {"w": X.T @ gz, "b": np.array([gz.sum()])}
+/home/claude/fedfair/engine.py:86: RuntimeWarning: invalid value encountered in matmul
+  return X @ p["w"] + p["b"][0], None
+/usr/local/lib/python3.13/site-packages/numpy/_core/_methods.py:132: RuntimeWarning: invalid value encountered in reduce
+  ret = umr_sum(arr, axis, dtype, out, keepdims, where=where)
+seed 61
+done

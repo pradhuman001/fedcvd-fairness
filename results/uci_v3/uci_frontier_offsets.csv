@@ -1,0 +1,11 @@
+family,metric,n_points,offset,ci_lo,ci_hi,ci_excludes_0
+oversample,dp_inter,2,0.1136,0.0411,0.1773,True
+oversample,eo_inter,2,0.0757,-0.078,0.1454,False
+over_label,dp_inter,1,0.021,-0.02,0.0729,False
+over_label,eo_inter,1,0.0004,-0.0837,0.0657,False
+w_label,dp_inter,1,0.0087,-0.0309,0.0571,False
+w_label,eo_inter,1,-0.0081,-0.0873,0.0579,False
+w_group,dp_inter,2,0.0548,0.0091,0.0933,True
+w_group,eo_inter,2,0.0263,-0.0347,0.0838,False
+eo_pen,dp_inter,1,0.0212,-0.0004,0.0491,False
+eo_pen,eo_inter,1,0.0047,-0.0484,0.0575,False
