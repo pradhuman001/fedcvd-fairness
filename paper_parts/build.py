@@ -7,7 +7,13 @@ bhead,bitems=bib.split('\\begin{thebibliography}')[1].split('\n',1)[0],re.split(
 bitems=[b for b in bitems if b.strip().startswith('\\bibitem')]
 def cited(t): return {k.strip() for m in re.finditer(r'\\cite\{([^}]*)\}',t) for k in m.group(1).split(',')}
 def bibfor(t):
-    c=cited(t); items=[b for b in bitems if re.match(r'\\bibitem\{([^}]*)\}',b.strip()).group(1) in c]
+    order=[]
+    for m in re.finditer(r'\\cite\{([^}]*)\}',t):
+        for k in m.group(1).split(','):
+            k=k.strip()
+            if k not in order: order.append(k)
+    key=lambda b:re.match(r'\\bibitem\{([^}]*)\}',b.strip()).group(1)
+    items=sorted([b for b in bitems if key(b) in order],key=lambda b:order.index(key(b)))
     return "\\begin{thebibliography}{99}\\small\n"+"".join(items)+"\n\\end{thebibliography}\n"
 # ---------- supplement text
 a=p3.index('\\appendices'); p3main=p3[:a]
@@ -30,6 +36,7 @@ for m in re.finditer(r'\\section\{[^}]*\}|\\label\{((?:sec|app):[a-z0-9]+)\}',su
     elif m.group(1): secmap[m.group(1)]=chr(64+L)
 print(tabmap); print(secmap)
 def sref(t):
+    t=re.sub(r'\\srefr\{([^}]*)\}\{([^}]*)\}',lambda m:'Supplement Secs.~%s--%s'%(secmap[m.group(1)],secmap[m.group(2)]),t)
     def f(m):
         l=m.group(1)
         if l in tabmap: return 'Table~'+tabmap[l]
