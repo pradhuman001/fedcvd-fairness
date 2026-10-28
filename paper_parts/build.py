@@ -1,44 +1,47 @@
 import re,subprocess
 rd=lambda p:open(f'parts/{p}.tex').read()
 INL=lambda t:re.sub(r'\\input\{(tab\d*_\w+\.tex)\}',lambda m:open(m.group(1)).read().strip(),t)
-p1,p2,p3,pmlp,p3b,bib=[rd(x) for x in ['p1','p2','p3','pmlp','p3b','bib']]
-a=p3.index('\\appendices'); main_body=p1+"\n"+p2+"\n"+p3[:a]
-# p3b: robust, conv, eg, uci, reproducibility
-k=p3b.index('\\section*{Reproducibility}'); repro=p3b[k:]; supp_rest=p3b[:k]
-r0=supp_rest.index('\\section{Convergence of penalized models}')
-robust=supp_rest[:r0]; rest=supp_rest[r0:]
-APP=['tab:grp','tab:perlam','tab:ctl','tab:lso','tab:rob','tab:mlp','tab:mlpoff','tab:fine','tab:glob']
-moved=[]
-for lab in APP:
-    for name in ('main_body','pmlp'):
-        src=globals()[name]
-        if '\\label{'+lab+'}' not in src: continue
-        i=src.index('\\label{'+lab+'}'); a2=src.rfind('\\begin{table',0,i); e=src.index('\\end{table',i); e=src.index('}',e)+1
-        if src[e:e+1]=='*': e+=1
-        moved.append(src[a2:e]); globals()[name]=src[:a2]+src[a2+len(src[a2:e]):]; break
-    else: raise SystemExit('missing '+lab)
-# supplement source, in order
-addtab='\\section{Additional tables}\\label{app:tables}\nExploratory and per-$\\lambda$ tables referred to in the main text.\n\n'+'\n\n'.join(moved)+'\n\n'
-supp_body=addtab+robust+'\n'+pmlp+'\n'+rest
-supp_body=INL(supp_body)
-# label -> number / section letter
+m1,m2,m3,p1,p2,p3,pmlp,p3b,bib=[rd(x) for x in ['m1','m2','m3','p1','p2','p3','pmlp','p3b','bib']]
+# ---------- bibliography
+bhead,bitems=bib.split('\\begin{thebibliography}')[1].split('\n',1)[0],re.split(r'(?=\\bibitem\{)',bib.split('\\begin{thebibliography}')[1].split('\n',1)[1].replace('\\end{thebibliography}','').replace('\\end{document}',''))
+bitems=[b for b in bitems if b.strip().startswith('\\bibitem')]
+def cited(t): return {k.strip() for m in re.finditer(r'\\cite\{([^}]*)\}',t) for k in m.group(1).split(',')}
+def bibfor(t):
+    c=cited(t); items=[b for b in bitems if re.match(r'\\bibitem\{([^}]*)\}',b.strip()).group(1) in c]
+    return "\\begin{thebibliography}{99}\\small\n"+"".join(items)+"\n\\end{thebibliography}\n"
+# ---------- supplement text
+a=p3.index('\\appendices'); p3main=p3[:a]
+d=p3main.index('\\section{Discussion and Limitations}')
+rob_res=p3main[:d]; disc=p3main[d:]; disc=disc[:disc.index('\\section{Conclusion}')]
+k=p3b.index('\\section*{Reproducibility}'); repro_long=p3b[k:]; supp_rest=p3b[:k]
+meth=p1[p1.index('\\section{Methods and Experimental Setup}'):]
+meth=meth.replace('\\section{Methods and Experimental Setup}','\\section{Extended methods and experimental setup}')
+res=p2.replace('\\section{Results}','\\section{Extended results}')
+rob_res=rob_res.replace('\\subsection{Robustness checks}','\\subsection{Robustness checks}')
+disc=disc.replace('\\section{Discussion and Limitations}','\\section{Extended discussion and limitations}')
+supp_body=INL(meth+"\n"+res+"\n"+rob_res+"\n"+disc+"\n"+supp_rest+"\n"+pmlp+"\n")
 tabmap={}; n=0
 for m in re.finditer(r'\\begin\{table\*?\}|\\label\{(tab:[a-z0-9]+)\}',supp_body):
     if m.group(0).startswith('\\begin'): n+=1
     else: tabmap[m.group(1)]='S%d'%n
 secmap={}; L=0
-for m in re.finditer(r'\\section\{[^}]*\}(?:\s*\\label\{([a-z]+:[a-z0-9]+)\})?|\\label\{(sec:[a-z0-9]+|app:[a-z0-9]+)\}',supp_body):
+for m in re.finditer(r'\\section\{[^}]*\}|\\label\{((?:sec|app):[a-z0-9]+)\}',supp_body):
     if m.group(0).startswith('\\section'): L+=1
-    lab=m.group(1) or m.group(2)
-    if lab: secmap[lab]=chr(64+L)
-print(tabmap,secmap)
-def fix(t):
-    t=re.sub(r'(?:Appendix|Sec\.)~\\ref\{((?:app|sec):[a-z0-9]+)\}',lambda m:('Supplement Sec.~'+secmap[m.group(1)]) if m.group(1) in secmap else m.group(0),t)
-    t=re.sub(r'\\ref\{(tab:[a-z0-9]+)\}',lambda m:tabmap[m.group(1)] if m.group(1) in tabmap else m.group(0),t)
-    return t
-main_body=fix(main_body)
-main_src=INL(main_body+"\n"+repro+"\n"+"\\begin{thebibliography}"+bib.split('\\begin{thebibliography}')[1].replace('\\end{document}','')+"\n\\end{document}\n")
-# repro mentions Table~\ref{tab:seeds} fine (main)
+    elif m.group(1): secmap[m.group(1)]=chr(64+L)
+print(tabmap); print(secmap)
+def sref(t):
+    def f(m):
+        l=m.group(1)
+        if l in tabmap: return 'Table~'+tabmap[l]
+        if l in secmap: return 'Supplement Sec.~'+secmap[l]
+        raise SystemExit('unresolved sref '+l)
+    return re.sub(r'\\sref\{([^}]*)\}',f,t)
+repro_main=r"""\section*{Reproducibility}
+Code, cleaned BRFSS/UCI tables, per-seed results for every table and a script that checks the numbers quoted in the text are at \texttt{github.com/pradhuman001/fedcvd-fairness}. The supplementary material (Sections A--H, Tables S1--S%d: extended methods and results, robustness, MLP, convergence, exponentiated-gradient reference, UCI replication) accompanies the paper and is in the repository (\texttt{supplement.pdf}).
+
+""" % n
+main_src=sref(INL(m1+"\n"+m2+"\n"+m3+"\n"+repro_main))
+main_src=main_src+bibfor(main_src)+"\\end{document}\n"
 FB=r"""\documentclass[10pt,twocolumn]{article}
 \usepackage[letterpaper,top=0.75in,bottom=1in,left=0.625in,right=0.625in,columnsep=0.25in]{geometry}
 \usepackage{times}
@@ -58,9 +61,10 @@ supp=head+"""\\begin{document}
 \\maketitle
 \\renewcommand{\\thetable}{S\\arabic{table}}
 \\appendices
-This supplement contains the additional tables, robustness checks, MLP results, convergence checks, the exponentiated-gradient reference and the UCI replication referred to in the main paper. Section letters and table numbers (S1, S2, \\dots) match the references in the main text.
+This supplement contains the extended methods, results and discussion of the main paper, additional robustness checks, an MLP, convergence checks, an exponentiated-gradient reference and a UCI replication. Table numbers (S1, S2, \\dots) and section letters match the references in the main paper. Section references of the form ``Sec.~III-A'' inside copied text refer to Section~A here.
 
-"""+supp_body+"\n"+"\\begin{thebibliography}{9}\\small\n"+re.search(r"\\bibitem\{agarwal2018\}.*",bib).group(0)+"\n\\end{thebibliography}\n\\end{document}\n"
+"""+supp_body+"\n"+repro_long+"\n"
+supp=supp+bibfor(supp)+"\\end{document}\n"
 open('main.tex','w').write(main_src); open('supplement.tex','w').write(supp)
 def build(name,src):
     have=subprocess.run(['kpsewhich','IEEEtran.cls'],capture_output=True,text=True).stdout.strip()
