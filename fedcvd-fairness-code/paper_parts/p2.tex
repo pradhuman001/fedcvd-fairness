@@ -1,0 +1,228 @@
+
+\begin{table}[t]
+\centering
+\caption{Masking at $\lambda{=}8$ (fine-grid suite; logistic regression, rule (q)). Reductions are relative to FedAvg. ``Marginal'' penalizes the sex and age indicators together; ``Intersectional'' the four age$\times$sex cells. DP$_\text{age}$: old vs.\ young selection-rate gap.}
+\label{tab:mask}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccccc}
+\toprule
+Penalty & AUROC & DP$_\text{sex}$ & DP$_\text{age}$ & DP$_\text{int}$ & $\Delta$DP$_\text{int}$ & EO$_\text{int}$ & $\Delta$EO$_\text{int}$\\
+\midrule
+\input{tab3_mask.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Results}
+\subsection{Auditing one attribute misses the intersection; auditing both marginals does not}
+\label{sec:mask}
+On natural BRFSS at $\lambda{=}8$ (Tables~\ref{tab:main}, \ref{tab:mask}; this subsection: 5 natural and 20 capped seeds, except where stated) the sex-only model cuts the sex DP gap by 87\% (0.111$\to$0.015) and the sex EO gap by 93\% (0.272$\to$0.019), but the age$\times$sex gaps by only 33\% (DP 0.255$\to$0.171) and 28\% (EO 0.462$\to$0.332), at AUROC 0.798$\to$0.789. A sex-only audit would pass this model on DP (0.015) although its intersectional DP gap is 12$\times$ larger. Capped data agree (DP$_\text{int}$ 0.251$\to$0.167, EO$_\text{int}$ 0.453$\to$0.325). An age-only penalty leaves the sex gap in place (DP$_\text{sex}$ 0.131). The masking is visible on the age marginal itself: the sex-only model's age DP gap is 0.154 against 0.152 for FedAvg (natural, 5 seeds; 0.151 against 0.150 capped, 20 seeds), whereas the marginal-both model reaches 0.024 (0.034 capped); the pre-specified threshold (Sec.~\ref{sec:setup}) is met in both scenarios.
+
+Penalizing the sex and age marginals \emph{together} closes the intersectional gap almost as well as penalizing the four cells: DP$_\text{int}$ 0.031 vs.\ 0.032 and EO$_\text{int}$ 0.232 vs.\ 0.228 (natural), 0.043 vs.\ 0.048 and 0.182 vs.\ 0.171 (capped). At equal AUROC against the intersectional frontier, the marginal-both offsets are DP $-0.002$ [$-0.003,-0.001$] and EO $+0.007$ [$+0.003,+0.012$] (capped, 20 seeds) and DP $+0.000$, EO $-0.005$ (natural, 5 seeds; the permutation $p$ cannot go below 0.0625 with 5 seeds). With two binary attributes, then, the masking is a failure of auditing \emph{one} attribute, not of marginal fairness: an audit of both marginals would have flagged the sex-only model. Whether crossing matters with more or finer attributes is untested here and is the setting where \cite{kearns2018} predicts it should.
+
+\subsection{What penalties cost, how strength matters, and group thresholds}
+\label{sec:post}
+\textbf{Cost.} Intersectional penalties close most of the DP gap, but AUROC falls from 0.798 to 0.680 (natural, $\lambda{=}8$; 0.681 capped), and sensitivity at the deployable rule (fx) from 0.310 to 0.210 (natural; 0.310 to 0.215 capped; Table~\ref{tab:post}). Group-wise AUROC falls in every group, most for the older groups (older women/men 0.72/0.70 to 0.67/0.65; younger 0.80/0.79 to 0.78/0.76; Table~\ref{tab:grp}). The cost is not due to federation: FedAvg and its centralized control have the same AUROC (0.797).
+
+\textbf{Strength.} The EO gap is U-shaped in $\lambda$ (Table~\ref{tab:fine}). For the intersectional penalty (natural) EO$_\text{int}$ is 0.459 at $\lambda{=}0$, 0.371 at 0.1, 0.100 at 0.5, 0.105 at 1, then 0.218 at 4 and 0.228 at 8; capped: 0.453, 0.352, 0.129 (0.5), 0.126 (1), 0.165 (4), 0.171 (8). The rise from $\lambda{=}1$ to 8 is $+0.123$ [$+0.117,+0.128$] natural (5 seeds) and $+0.045$ [$+0.025,+0.064$] capped (20 seeds). DP$_\text{int}$ decreases monotonically. At $\lambda{=}8$ the penalty selects younger women at TPR 0.40 against an overall sensitivity of 0.21 at the 9.3\% operating point, which is consistent with equal selection rates over-serving the low-prevalence groups, but we do not test that explanation. A mechanism consistent with the U-shape, from the intersectional DP penalty on 5 natural seeds (correlational, not a causal test): the age coefficient of the model is $+0.766$ at $\lambda{=}0$, $-0.001$ at 0.5 (the EO minimum), $-0.111$ at 1 and $-0.24$ at 8 (sex coefficient $+0.272\to+0.024\to-0.055$), so the penalty first removes the model's dependence on age and then over-corrects past it, which raises the EO gap. At the EO-optimal $\lambda{=}0.5$ the cost is smaller than at $\lambda{=}8$: AUROC 0.751 against 0.797 for FedAvg. ``Monotone'' statements about EO hold only for $\lambda\ge1$, and comparing mitigations at a single large $\lambda$ therefore overstates the penalty's EO gap.
+
+\textbf{Group thresholds.} Thresholds fitted on FedAvg scores leave the ranking, hence AUROC (0.797), unchanged by construction; they change the operating point. Under the deployable rule (Table~\ref{tab:thr}), \emph{equal TPR} gives EO$_\text{int}$ 0.087 (natural) and 0.142 (capped). Against the penalty at the same rule: natural, 0.102 at $\lambda{=}1$ (paired difference $-0.015$ [$-0.031,+0.000$]), 0.220 at $\lambda{=}4$ ($-0.133$ [$-0.144,-0.122$]) and 0.232 at $\lambda{=}8$ ($-0.145$ [$-0.155,-0.135$]); capped, 0.125 at $\lambda{=}1$ ($+0.018$ [$-0.016,+0.049$]) and 0.168 at $\lambda{=}8$ ($-0.026$ [$-0.061,+0.009$]). So thresholds beat a strong penalty on EO in natural data only, and tie with a weak penalty everywhere; but the weak penalty (AUROC 0.716--0.719) already loses sensitivity (0.231 vs.\ 0.310) and PPV (0.233 vs.\ 0.270). When the equal-TPR thresholds are fitted on a validation split of about 30 respondents per client (capped), EO is worse (0.237; $+0.095$ over the training-fit thresholds) because few positives determine four thresholds; in natural data the variant matches (0.090 vs.\ 0.087). \emph{Equal selection} gives DP$_\text{int}$ 0.005 / 0.015 (natural / capped) against 0.032 / 0.046 for the penalty at $\lambda{=}8$, but lowers sensitivity (0.310$\to$0.236) and the smallest group's PPV (0.238$\to$0.114), and leaves EO at 0.268. Unconstrained FedAvg at the prevalence-matched threshold never flags one group (smallest group TPR 0.000); equal selection raises it to 0.197 and equal TPR to 0.283 (natural). Each rule optimizes one metric. 
+
+\textbf{Against an EO penalty.} The comparison above uses the DP-type penalty, which does not target EO. We therefore also trained a label-conditional covariance EO penalty (Sec.~\ref{sec:penalty}; Table~\ref{tab:eopen}, same fixed-threshold rule, 10 natural / 20 capped seeds). Natural: equal-TPR thresholds have lower EO$_\text{int}$ than the EO penalty at every strength tested, by $-0.009$ [$-0.012,-0.006$] against $\lambda{=}0.5$ (0.087 vs.\ 0.096), $-0.015$ [$-0.037,+0.006$] against $\lambda{=}1$, and $-0.107$ [$-0.123,-0.090$] against $\lambda{=}4$, while keeping 0.067--0.112 more AUROC. Capped: the EO penalty is not distinguishable from thresholds on EO (paired differences $-0.030$ to $+0.022$, all intervals contain zero), but still costs 0.032--0.084 AUROC. As with the DP-type penalty, EO rises again at strong penalties ($\lambda\ge 2$ natural), and individual seeds at $\lambda\ge 8$ differ in EO by up to 0.07 between schedules, and two fits collapsed without the guard (Appendix~\ref{app:conv}); the per-seed EO range at each $\lambda$ is in Table~\ref{tab:eopen}, so we read high-$\lambda$ EO-penalty numbers as unreliable rather than as a stable property of the method. Per-seed standard deviations of EO$_\text{int}$ for the EO penalty are 0.003 ($\lambda{=}0.5$) and 0.022--0.032 (other $\lambda$) in natural data and 0.049--0.070 in capped data, so single-seed EO-penalty numbers are noisy at every strength except the weakest natural one. The defensible statement is that a post-hoc threshold matches or beats the EO penalty on EO at no AUROC cost, not that thresholds are better in general; it holds for one dataset and a covariance penalty, and not for a stronger in-processing method.
+
+\begin{table}[t]
+\centering
+\caption{EO penalty versus group thresholds under the fixed-threshold rule (fx). Mean over 10 natural / 20 capped seeds; min TPR is the smallest age$\times$sex group.}
+\label{tab:eopen}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\input{tab4_eo.tex}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\caption{Deployable rule (fx), $\lambda{=}8$, mean over seeds (10 natural, 20 capped) [95\% CI over seeds]. Sens./PPV: overall; min PPV: smallest age$\times$sex group. ECE: raw / after an intercept shift to the nominal prevalence (thresholds do not change scores).}
+\label{tab:post}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+Method & AUROC & DP$_\text{int}$ & EO$_\text{int}$ & Sens. & PPV & min PPV & ECE\\
+\midrule
+\input{tab2_post.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Fine penalty grid, $\lambda\in\{0.1,\dots,16\}$ (logistic regression, rule (q); mean over 20 capped / 5 natural seeds). EO of the intersectional and marginal-both penalties is U-shaped; sex-only stays high for all $\lambda$.}
+\label{tab:fine}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccccc}
+\toprule
+& \multicolumn{3}{c}{Intersectional} & \multicolumn{3}{c}{Marginal-both} & \multicolumn{3}{c}{Sex-only}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}\cmidrule(lr){8-10}
+$\lambda$ & AUROC & DP$_\text{int}$ & EO$_\text{int}$ & AUROC & DP$_\text{int}$ & EO$_\text{int}$ & AUROC & DP$_\text{int}$ & EO$_\text{int}$\\
+\midrule
+\input{tab3_fine.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{Deployable rule: equal-TPR thresholds on FedAvg versus the intersectional penalty at several $\lambda$. Mean over 10 natural / 20 capped seeds.}
+\label{tab:thr}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+Method & AUROC & DP$_\text{int}$ & EO$_\text{int}$ & Sens. & PPV\\
+\midrule
+\input{tab3_thr.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Operating-point sensitivity}
+\label{sec:op}
+Every gap above is measured at one operating point, the top 9.3\% of scores. Table~\ref{tab:op} repeats the audit at other selection rates. FedAvg's EO$_\text{int}$ grows from 0.307 (5\% selected) to 0.698 (20\%) in natural data (0.300 to 0.664 capped), and the youngest group of women has TPR 0.000 at 5\%, 9.3\% and 15\% (0.015 at 20\%). With fixed risk cut-offs of 0.10, 0.15 and 0.20 FedAvg selects 35\%, 22\% and 14\% of respondents (natural) with youngest-women TPR 0.125, 0.042 and 0.000. The penalized models' EO is not monotone in the selection rate (0.132, 0.232, 0.171, 0.151 at 5, 9.3, 15, 20\% for the natural $\lambda{=}8$ penalty), and the comparison of oversampling with the penalty at equal $\lambda$ also changes with the rate. In natural data oversampling has lower EO than the penalty at all four rates, but by 0.016 at 9.3\% (0.216 vs.\ 0.232), 0.009 at 20\% and 0.048 at 15\% (0.142 vs.\ 0.151; 0.123 vs.\ 0.171); in capped data the ordering itself changes (oversampling is higher at 5, 9.3 and 20\%, lower at 15\%: 0.140 vs.\ 0.161). The models are not at equal AUROC, so this illustrates sensitivity to the operating point, not an effect. Our offset analyses use 9.3\% and the deployable threshold, and the sign and size of EO effects should be read as specific to those points. Table~\ref{tab:grp} shows what the penalty does to group-wise discrimination and calibration: it lowers AUROC in all groups and shifts calibration-in-the-large from about zero to $+0.065$ (younger women), $+0.061$ (younger men), $-0.004$ (older women) and $-0.084$ (older men), i.e.\ it under-predicts risk for older men by 8 points while overpredicting for younger groups. Oversampling's calibration shift is a uniform prior shift of about $+0.3$ to $+0.4$ in every group.
+
+\begin{table}[t]
+\centering
+\caption{Gaps at other selection rates (DP$_\text{int}$ / EO$_\text{int}$; mean over seeds; rule (q) with the top 5, 9.3, 15, 20\% of scores selected); mean over 10 natural / 20 capped seeds.}
+\label{tab:op}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lcccc}
+\toprule
+Model & 5\% & 9.3\% & 15\% & 20\%\\
+\midrule
+\input{tab2_op.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{Group-wise AUROC and calibration-in-the-large (mean predicted minus observed prevalence); groups: younger F, younger M, older F, older M. Mean over 20 seeds per scenario.}
+\label{tab:grp}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lcccccccc}
+\toprule
+& \multicolumn{4}{c}{AUROC} & \multicolumn{4}{c}{CITL}\\
+\cmidrule(lr){2-5}\cmidrule(lr){6-9}
+Model & yF & yM & oF & oM & yF & yM & oF & oM\\
+\midrule
+\input{tab3_grp.tex}
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Oversampling: what it does, and what drives it}
+\label{sec:over}
+Primary estimates use one grid per scenario so the Holm family is not mixed across grids: the dense grid $\lambda\in\{0.5,1,2,4,8,16\}$ in both scenarios, 20 seeds, naive frontier built from all six points (Fig.~\ref{fig:dense}; Table~\ref{tab:ctl}, bottom rows; Table~\ref{tab:off} gives the core-grid values). For logistic regression, oversampling lowers DP ($-0.012$ [$-0.014,-0.010$] natural) and raises EO ($+0.059$ [$+0.054,+0.064$]) (per-seed range $+0.044$ to $+0.081$); both survive Holm correction over the 12 logistic-regression tests (adjusted $p<0.001$). In capped data neither does: DP $-0.006$ [$-0.014,+0.002$] (adjusted $p=0.47$), EO $+0.020$ [$-0.004,+0.041$] (adjusted $p=0.45$). The core-grid natural EO value ($+0.072$) is larger because the naive EO curve is U-shaped and the chord from $\lambda{=}1$ to $4$ lies below the naive points at $\lambda{=}2$, so chord-based offsets overstate (Table~\ref{tab:perlam}: natural dense per-$\lambda$ offsets fall from $+0.085$ at $\lambda{=}1$ to $+0.038$ at $\lambda{=}16$). In capped data the per-$\lambda$ offsets are mostly indistinguishable from zero; only $\lambda{=}8$ excludes zero ($+0.003$ to $+0.070$). At capped $\lambda{=}0.5$ the equal-AUROC offset is not estimable: the oversampled models (AUROC 0.759) lie above the top of the naive frontier (0.751) in 17 of 20 seeds. The equal-$\lambda$ comparison (Table~\ref{tab:eqlam}) does show a significant EO difference there ($+0.033$ [$+0.015,+0.052$]), the only capped point that does; it is diluted in the average because it is an equal-$\lambda$, not an equal-AUROC, estimate and the other capped points are null. The fine grid adding $\lambda\in\{0.1,0.25,0.5\}$ (Table~\ref{tab:fine}) gives $+0.003$ [$-0.016,+0.020$] capped and $+0.049$ [$+0.042,+0.055$] natural, so the size of the average offset depends on the grid, and in capped data its sign does too.
+
+The comparator matters. Table~\ref{tab:eqlam} compares at equal $\lambda$: the oversampled models have \emph{lower} natural EO than the naive penalty for $\lambda\ge4$ because they keep 0.02--0.03 more AUROC, and higher EO at $\lambda\le1$, where the naive penalty is near its EO optimum (naive $\lambda{=}0.5$: AUROC 0.751, EO 0.100). So ``raises EO'' holds at equal AUROC, not at equal penalty strength. A state-level cluster bootstrap that resamples test states with models fixed gives EO $+0.069$ [$+0.056,+0.082$] (natural) and $+0.032$ [$+0.022,+0.042$] (capped); it reflects geographic sampling of the test population only, not training variability.
+
+\begin{table}[t]
+\centering
+\caption{Equal-$\lambda$ comparison, oversample vs.\ naive intersectional penalty, logistic regression, 20 seeds. $\Delta$EO is the paired difference [95\% CI].}
+\label{tab:eqlam}
+\footnotesize
+\input{tab5_eqlam.tex}
+\end{table}
+
+\textbf{Class rebalancing explains a large, setting-dependent share.} Table~\ref{tab:ctl} (exploratory). Aggregating with original $n_k$ or removing the noise leaves the effect unchanged. Duplicating only to balance \emph{labels} reproduces a share of the EO shift that depends on the setting: 49\% on the dense natural grid ($+0.029$ against $+0.059$), 75\% on the natural core grid ($+0.042$ against $+0.056$), and 90\% on the capped dense grid ($+0.018$ against $+0.020$, both within noise of zero). The paired difference (oversample $-$ label-balance) is $+0.030$ [$+0.027,+0.034$] in natural data (DP $-0.009$) and $+0.001$ [$-0.011,+0.015$] in capped data (DP $+0.002$), so in natural data a clear part of the shift is \emph{not} explained by label balance. Under Dirichlet $\alpha{=}1$ partitions label-balance gives about 90\% (Table~\ref{tab:dir}); at $\alpha{=}0.3$ it exceeds oversampling (EO $+0.042$ against $+0.012$). Label-only loss weights ($-0.006$, $+0.030$ core grid) and (group, label) weights ($-0.003$, $+0.027$) behave similarly. Re-weighting by \emph{group alone} is different: EO $-0.011$ [$-0.013,-0.009$] (natural dense; adjusted $p<0.001$) and $-0.011$ (capped dense; adjusted $p=0.003$) with DP $+0.001$ to $+0.002$. These are gains of about 0.01 EO.
+
+\textbf{Its miscalibration is a prior shift.} Oversampling raises ECE from 0.006 to 0.351 (natural) and 0.311 (capped) because the training prevalence moves toward 50\%. One intercept shift to the nominal prevalence brings ECE back to 0.007 / 0.025, and it cannot change DP or EO, which depend only on score ranks under both decision rules. Calibration therefore does not explain the DP/EO shifts; it is a separate, fixable property that matters only if probabilities are used directly.
+
+\subsection{Is it specific to federation?}
+\label{sec:fedspec}
+A centralized control with the same number of gradient steps (Table~\ref{tab:cvf}) gives oversampling DP $-0.016$ / $-0.008$ and EO $+0.052$ / $+0.025$ (natural, dense frontier / capped). Federation adds a small but significant amount in natural data (EO $+0.008$ [$+0.005,+0.010$], DP $+0.004$ [$+0.004,+0.005$]) and nothing measurable in capped data (EO $+0.009$ [$-0.014,+0.031$]). On near-IID clients the oversampling effect is therefore a property of the mitigation, not of federation. Under skewed clients that changes (Sec.~\ref{sec:robust}): the oversampling EO effect shrinks federated and group re-weighting with local counts turns harmful, an effect that does not occur centrally and that a global-count variant removes. Federated training thus describes how the models are trained here, and the main conclusions (masking, penalty cost, thresholds, rebalancing) hold centrally as well.
+
+\begin{table*}[t]
+\centering
+\caption{Frontier offsets at equal AUROC vs.\ the naive intersectional penalty (negative = better), logistic regression, rule~(q), core grid $\lambda\in\{1,\dots,16\}$. Mean [95\% CI over 20 seeds per scenario].}
+\label{tab:off}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{Natural (20 seeds)} & \multicolumn{2}{c}{Capped, $n{=}150$ (20 seeds)}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Method & DP$_\text{int}$ offset & EO$_\text{int}$ offset & DP$_\text{int}$ offset & EO$_\text{int}$ offset\\
+\midrule
+\input{tab_off.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Offsets at each $\lambda$ separately (rule (q)): naive frontier AUROC and EO at that $\lambda$, then offsets at the method's own AUROC (`--' if fewer than half of the seeds fall inside the naive AUROC range: capped $\lambda{=}0.5$, 3 of 20 seeds). Natural: naive frontier from the dense grid $\lambda\in\{0.5,1,2,4,8,16\}$, 20 seeds; capped: core grid. Mean [95\% CI].}
+\label{tab:perlam}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+& Naive & Naive & \multicolumn{2}{c}{Oversample offset} & \multicolumn{2}{c}{Group re-weight offset}\\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Setting, $\lambda$ & AUROC & EO$_\text{int}$ & DP$_\text{int}$ & EO$_\text{int}$ & DP$_\text{int}$ & EO$_\text{int}$\\
+\midrule
+\input{tab2_perlam.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.95\textwidth]{../figs/frontier_capped.pdf}
+\caption{Accuracy--fairness frontiers (BRFSS capped, $n{=}150$; points $\lambda\in\{1,2,4,8,16\}$, mean of 20 seeds).}
+\label{fig:frontier}
+\end{figure*}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{../figs/frontier_dense_natural.pdf}
+\caption{Natural data, dense grid $\lambda\in\{0.5,1,2,4,8,16\}$, mean of 20 seeds. The naive EO curve is U-shaped (minimum near $\lambda{=}0.5$--1), so a chord between $\lambda{=}1$ and 4 overstates the oversampling offset.}
+\label{fig:dense}
+\end{figure}
+
+\begin{table*}[t]
+\centering
+\caption{Centralized matched control vs.\ federated: frontier offsets, logistic regression, rule~(q), mean [95\% CI over seeds]. ``Diff'' = federated $-$ central (paired); 20 seeds per scenario; natural: dense frontier $\lambda\in\{0.5,1,2,4,8,16\}$, capped: core grid.}
+\label{tab:cvf}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+& \multicolumn{3}{c}{Natural} & \multicolumn{3}{c}{Capped}\\
+\cmidrule(lr){2-4}\cmidrule(lr){5-7}
+Variant & Central & Federated & Diff & Central & Federated & Diff\\
+\midrule
+\input{tab2_cvf.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Control experiments for the oversampling EO effect (exploratory): offsets vs.\ the dense naive frontier at equal AUROC, mean [95\% CI over 20 seeds per scenario]. Upper rows use the core $\lambda$ points for every arm; the last three rows use the dense natural grid ($\lambda\in\{0.5,\dots,16\}$).}
+\label{tab:ctl}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{Natural (20 seeds)} & \multicolumn{2}{c}{Capped (20 seeds)}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Variant & DP$_\text{int}$ & EO$_\text{int}$ & DP$_\text{int}$ & EO$_\text{int}$\\
+\midrule
+\input{tab_ctl.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}

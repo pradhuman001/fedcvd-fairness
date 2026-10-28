@@ -1,0 +1,117 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,graphicx,array,multirow}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+\newcommand{\DP}{\mathrm{DP}}
+\newcommand{\EO}{\mathrm{EO}}
+
+\begin{document}
+\title{What Do Fairness Mitigations Do to Intersectional Gaps in Cardiovascular Risk Prediction? An Evaluation with 52 State-Level Clients on BRFSS}
+\author{\IEEEauthorblockN{Pradhuman Kumar Sharma}
+\IEEEauthorblockA{Department of Computer Science and Engineering, Sharda University, Greater Noida, India\\
+pradhuman4892@gmail.com}}
+\maketitle
+
+\begin{abstract}
+Fairness audits of clinical risk models usually test one sensitive attribute. Using CDC BRFSS 2023 (317,091 respondents, 52 state clients, FedAvg, logistic regression), we measure what such audits miss and what common mitigations do to age$\times$sex gaps in cardiovascular-risk prediction, at equal AUROC, against group-threshold post-processing and a centralized control. A sex-only penalty removes 87--89\% of the sex demographic-parity (DP) gap but does not reduce the age gap (0.154 vs.\ 0.152 for FedAvg); penalizing the sex and age marginals together closes the intersectional gap as well as an intersectional penalty does, so marginals suffice here. In natural data penalties cost about 0.12 AUROC at $\lambda{=}8$ and 0.05 at the equalized-odds (EO) optimum ($\lambda{=}0.5$). Equal-TPR group thresholds fitted on training scores keep AUROC (0.797), beat a strong penalty ($\lambda{\ge}4$) on the EO gap in natural data and tie a weak one; fitted on a small validation split, their EO is worse (0.237 vs.\ 0.168), and they need the sensitive attribute at decision time. At equal AUROC, local oversampling lowers DP and raises EO (natural data: $+0.059$ [0.054, 0.064], 20 seeds; hospital-scale clients: $+0.020$ [$-$0.004, 0.041], not significant); a centralized control reproduces it, and balancing labels alone reproduces 49--90\% of the EO shift, depending on the setting. Group re-weighting with local counts is harmful under synthetic client skew; global counts repair it. All gaps depend strongly on the operating point. The results come from one survey and small models.
+\end{abstract}
+
+\begin{IEEEkeywords}
+algorithmic fairness, intersectionality, federated learning, cardiovascular disease, post-processing, equalized odds
+\end{IEEEkeywords}
+
+\section{Introduction}
+Cardiovascular disease (CVD) is a leading cause of death, and federated learning (FL) \cite{mcmahan2017} lets institutions train one risk model without sharing patient-level data. A recent systematic review found that none of 22 included studies of FL for CVD prediction reported formal subgroup or fairness analyses \cite{li2026}. Fairness-aware FL exists \cite{li2020qffl,ezzeldin2023,li2025fairfml,wu2025fedida}, but audits mostly concern one sensitive attribute, which can hide disparities at the \emph{intersection} of attributes \cite{crenshaw1989,buolamwini2018,foulds2020,kearns2018}. Only 4 of 38 studies in a healthcare-FL ethics review addressed intersectional fairness \cite{mir2026}, and a survey of group fairness in FL covering 48 articles up to March 2025 found no work on intersectionality in FL \cite{salazar2024}.
+
+Each mitigation has a strength parameter that trades accuracy for fairness, so comparing at one strength conflates mechanism and accuracy. We compare mitigations along their accuracy--fairness frontiers, against group-specific post-processing thresholds \cite{hardt2016}, report sensitivity, predictive value, calibration and operating-point sensitivity, and use a centralized control that tests whether an effect is specific to federation.
+
+\textbf{What is and is not new.} That fairness over marginal groups can hide subgroup violations \cite{kearns2018,foulds2020} and that post-processing is a strong baseline for equalized odds \cite{hardt2016,pfohl2021} is known; we do not claim it. This is a measurement study of fairness mitigations for clinical risk prediction on real survey data split into 52 state-level clients and trained with FedAvg, with three contributions: (i) it measures how much a single-attribute audit misses, whether penalizing both marginals suffices, and what penalties cost in AUROC and sensitivity as a function of their strength, against both DP and EO penalties and group thresholds; (ii) it shows that local oversampling shifts DP and EO at equal AUROC, that label balancing alone reproduces 49--90\% of the EO shift (setting-dependent) and that a centralized control reproduces it, and that group re-weighting with local counts fails under client skew where a global-count version does not; (iii) it supplies an evaluation protocol (equal-AUROC offsets, several operating points, held-out states, convergence checks) that changed several of our own earlier conclusions. Most findings are not specific to federation; Sec.~\ref{sec:fedspec} says which are.
+
+\section{Related Work}
+\textbf{FL for CVD.} FedAvg \cite{mcmahan2017} is the standard aggregation rule; FL has been applied to heart-disease hospitalization prediction from EHRs \cite{brisimi2018}, and FedProx handles heterogeneity \cite{li2020fedprox}. \textbf{Fairness in FL.} q-FFL targets client-level performance parity \cite{li2020qffl}; FairFed reweights clients by local fairness \cite{ezzeldin2023}; Papadaki et al.\ formalize minimax group fairness \cite{papadaki2022}; FedFaiREE gives distribution-free finite-sample guarantees with post-processing for small samples \cite{yin2024}. \textbf{Fair clinical prediction.} FairFML applies fair FL to cardiac-arrest prediction with one attribute \cite{li2025fairfml}; FedIDA handles multiple attributes with fairness-aware oversampling \cite{wu2025fedida}. Outside FL, Pfohl et al.\ compare fairness methods for clinical risk prediction \cite{pfohl2019,pfohl2021}, and Obermeyer et al.\ show that proxy labels can encode bias \cite{obermeyer2019}. \textbf{Subgroup fairness.} Kearns et al.\ show fairness over marginal groups can coexist with large violations on structured subgroups \cite{kearns2018}; Foulds et al.\ define intersectional fairness \cite{foulds2020}. Group-specific thresholds achieve equal opportunity by post-processing \cite{hardt2016}, and fairness criteria are incompatible when base rates differ \cite{chouldechova2017,kleinberg2017}. We propose no new algorithm and do \emph{not} reimplement FedIDA or FairFed; our oversampling and sex-only baselines are simplified variants.
+
+\section{Methods}
+\subsection{Federated fairness-penalized models}
+\label{sec:penalty}
+Client $k$ holds $D_k$ with $n_k$ samples and minimizes
+\begin{equation}
+L_k=\frac1{n_k}\sum_{i}\ell(y_i,\hat y_i)+\frac{\mu}{2}\|w\|^2+\lambda R_{\mathrm{fair}},
+\end{equation}
+with binary cross-entropy $\ell$, $\mu=10^{-4}$, and a covariance-based DP proxy \cite{zafar2017}
+\begin{equation}
+R_{\mathrm{fair}}=\sum_{g=1}^{G}\big(\mathrm{Cov}(s_g,z)\big)^2,
+\end{equation}
+where $s_g$ indicates group $g$ and $z$ is the logit. Squaring is necessary: signed covariances of one-hot indicators sum to zero. Age and sex are input features. Models: logistic regression (7 inputs) and a one-hidden-layer MLP (16 tanh units). FedAvg weights clients by $n_k$; $E{=}3$ full-batch local epochs.
+
+\textbf{EO penalty.} For the EO comparison (Sec.~\ref{sec:post}) the same squared covariance is computed separately within the positive and within the negative respondents of each client and the two terms are summed. It is a proxy for equal TPR and FPR; the schedule is stiffer (300 rounds at 0.15 for $\lambda\le8$, 600 at 0.075 for $\lambda{=}16$, 1200 at 0.0375 above).
+
+\textbf{Penalty groups.} \emph{Intersectional}: $G{=}4$ cells (age $\ge55$ vs.\ $<55$) $\times$ sex. \emph{Sex-only}: $G{=}2$. \emph{Age-only}: $G{=}2$. \emph{Marginal-both}: penalties on the sex and the age indicators ($G{=}4$ overlapping columns), the natural way to ``audit both attributes'' without crossing them.
+
+\textbf{Pre-specified masking criterion.} Before running the age-marginal comparison we fixed (file \texttt{PREREG\_marginal.txt} in the code) that ``marginals suffice'' would be claimed only if the sex-only model's age-marginal DP gap is at least 0.05 and at least twice that of the sex+age marginal model; otherwise the claim would be dropped.
+
+\textbf{Training budget.} The penalty makes the objective stiff, so one learning rate does not suit all settings. Logistic regression uses $T{=}100$ rounds at rate 0.3 for intersectional penalties with $\lambda\le8$ and $T{=}300$ at 0.15 for $\lambda{=}16$; for the sex-only, age-only and marginal-both penalties, $\lambda\le4$ uses $T{=}100$ at 0.3, $\lambda{=}8$ uses $T{=}200$ at 0.15 (marginal-both: 300 at 0.1), and $\lambda{=}16$ uses 400 at 0.075 (marginal-both: 600 at 0.05). A guard retries with half the rate and twice the rounds if pooled training AUROC drops below 0.55 or scores are non-finite; it fired in 194 of 9,835 logistic-regression fits (2.0\%, all at $\lambda\ge8$, by arm: label-balance 80 fits (6.3\% of its fits), naive penalty 38 (1.7\%), group re-weighting 40 (2.6\%; 19 more in the global-count variant, 24\%), oversampling 11 (0.5\%), EO penalty 6 (2.9\%)) and every retry converged. Appendix~\ref{app:conv} compares a subset of settings (all arms in capped data; the headline arms at $\lambda\ge8$ and the EO penalty in natural data) with half the rate and twice the rounds; the other runs are not checked. FedAvg is calibrated (ECE 0.006). MLP budget: Sec.~\ref{sec:mlp}. $\lambda$ is swept, not tuned.
+
+\subsection{Methods compared}
+Penalty-based variants use the intersectional DP penalty ($G{=}4$) at the same $\lambda$ unless stated; oversampling and re-weighting are \emph{combined with} that penalty, so their offsets measure the added effect.
+\begin{enumerate}
+\item \textbf{FedAvg} ($\lambda{=}0$); \textbf{Sex-only}, \textbf{Age-only}, \textbf{Marginal-both} and \textbf{Intersectional} (``naive'') penalties as above.
+\item \textbf{EO penalty} (Sec.~\ref{sec:penalty}): label-conditional covariance penalty on the four groups, used only in the comparison with group thresholds (Table~\ref{tab:eopen}).
+\item \textbf{Oversample}: each client duplicates every (group, label) cell up to its largest cell, with Gaussian noise (5\% of the cell's standard deviation) on age. A simplified variant of FedIDA's oversampling \cite{wu2025fedida}.
+\item \textbf{Controls}: label-only balancing by duplication; loss re-weighting by label, by group, or by (group, label) cell (weights $\propto1/$cell count, mean 1); aggregation with original $n_k$; no noise. Group re-weighting is computed from \emph{local} counts in each client by default; a \emph{global} variant uses weights from the pooled group counts, which a server could compute by secure aggregation of four counts.
+\item \textbf{Shrinkage}: local covariance blended with the pooled estimate, $\alpha=n_{k,g}/(n_{k,g}+20)$ (heuristic).
+\item \textbf{Group thresholds} (post-processing on FedAvg scores): \emph{equal selection} (each group's threshold gives the overall selection rate) and \emph{equal TPR} (each group's threshold gives the overall TPR) \cite{hardt2016}, fitted on the training scores or on a held-out 20\% validation split of each client (``val.\ split''; model trained on the other 80\%). They use group membership at decision time.
+\item \textbf{Centralized matched control}: all clients pooled into one, with the same number of gradient steps ($T\!\times\!E$), same penalty and variants.
+\end{enumerate}
+An exponentiated-gradient reduction \cite{agarwal2018} is reported only as an illustrative reference (Appendix~\ref{app:eg}).
+
+\subsection{Metrics and equal-AUROC comparison}
+\label{sec:eval}
+$\DP=\max_g P(\hat Y{=}1|g)-\min_g P(\hat Y{=}1|g)$; $\EO$ is the larger of the max--min TPR gap and FPR gap, over the 2 sex groups or the 4 age$\times$sex groups (``sex'', ``int''). DP is a parity \emph{audit}, not a clinical target: base rates genuinely differ (2.2\%--18.0\%), and forcing equal selection rates sacrifices sensitivity for older men. Two decision rules. (q) \emph{Prevalence-matched}: classify the top fraction of held-out scores equal to the training prevalence (9.3\%). (fx) \emph{Deployable}: a fixed score threshold from the training scores at the training prevalence. Both are monotone in the score, so they are unaffected by an intercept shift. Because a single operating point can mislead, Sec.~\ref{sec:op} repeats the audit at other selection rates and fixed risk cut-offs and reports group-wise AUROC and calibration. We also report sensitivity, PPV, the smallest group PPV, and calibration (10-bin ECE, before and after an intercept shift that matches the mean score to the nominal prevalence).
+
+For each method we sweep $\lambda$ over a grid (Table~\ref{tab:fine} for the fine grid $0.1$--$16$; $\{1,\dots,16\}$ for the core suites). \emph{Within each seed}, we trace the naive penalty's frontier (AUROC, gap) by linear interpolation and compute each method's offset from it at the same AUROC, averaged over in-range $\lambda$; negative = smaller gap at equal accuracy. Because the offset averages over the in-range $\lambda$ values, it depends on the grid: we therefore also report offsets at each $\lambda$ (Table~\ref{tab:perlam}) and under the fine grid (Sec.~\ref{sec:over}). Intervals are percentile bootstraps over seeds (10,000 resamples). $p$-values are two-sided sign-flip permutation tests of a zero mean offset (exact for $\le16$ seeds, so the smallest attainable $p$ is $2/2^{n}$: 0.002 for 10 seeds, 0.0625 for 5; Monte Carlo with 200{,}000 sign flips for 20 seeds, smallest reported $p$ 0.0001), Holm-corrected over \textbf{24 primary tests}: \{oversample, label-balance, group re-weight\} $\times$ \{DP, EO\} $\times$ \{natural, capped\} $\times$ \{logistic regression, MLP\}. With 10 seeds the smallest possible adjusted value is $24\times0.00195\approx0.047$, so ``not significant'' at that size does not mean ``absent''; the 12 logistic-regression primary tests use 20 seeds per scenario (the natural suites were extended from 10 to 20 for this reason); the 12 MLP tests use 5 (natural) and 10 (capped) seeds. Everything else is exploratory and reported with unadjusted intervals.
+
+\section{Experimental Setup}
+\label{sec:setup}
+\textbf{BRFSS 2023} \cite{brfss2023}. After complete-case restriction, 317,091 respondents from 52 states/territories; each state is one client (median 4.6K respondents). Features: age (imputed, top-coded at 80), BMI, high blood pressure, high cholesterol, diabetes, smoking, sex. Outcome: ever-told coronary heart disease or myocardial infarction (9.3\%); age$\times$sex prevalence 2.2\% (F, $<55$), 2.8\% (M, $<55$), 9.9\% (F, $\ge55$), 18.0\% (M, $\ge55$). Primary protocol: 85/15 random split per seed. \emph{Natural}: full state samples. \emph{Capped}: each client subsampled to 150 respondents to emulate hospital-scale clients. Seeds are 42--61 at most; the number per suite is in Table~\ref{tab:seeds}.
+
+\begin{table}[t]
+\centering
+\caption{Number of seeds per experiment suite (seeds 42--61 at most; natural = full state samples, capped = 150 respondents per client).}
+\label{tab:seeds}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcc}
+\toprule
+Suite & Natural & Capped\\
+\midrule
+Core, centralized control, controls, dense grid ($\lambda{=}0.5,2$) & 20 & 20\\
+Thresholds, operating points, group-wise metrics & 10 & 20\\
+EO penalty vs.\ thresholds & 10 & 20\\
+Leave-states-out, age cut-offs & 10 & 20\\
+Fine $\lambda$ grid & 5 & 20\\
+Age-marginal gap (Table~\ref{tab:mask}) & 5 & 20\\
+Dirichlet partitions (federated and centralized) & 10 & --\\
+MLP & 5 & 10\\
+Convergence checks (production vs.\ half rate) & 5 (select arms) & 5\\
+\bottomrule
+\end{tabular}
+\end{table}
+ A state stands in for a care site, not a hospital. \emph{Leave-states-out}: 15\% of states are held out entirely (10 natural / 20 capped partitions). \emph{Heterogeneity.} Real states are close to IID: the SD of client prevalence is 0.019 (range 0.049--0.150) and the mean total-variation distance between a client's age$\times$sex mix and the pooled mix is 0.059. To probe stronger heterogeneity we re-partition the same training data into 52 clients by sampling each (group, label) cell across clients from a Dirichlet distribution: $\alpha{=}1$ (prevalence SD 0.071, mean TV 0.282) and $\alpha{=}0.3$ (SD 0.144, TV 0.420). UCI Heart Disease \cite{detrano1989} (851 patients, four sites) is a small secondary check (Appendix~\ref{app:uci}).
+
+\textbf{Training budgets.} Under-trained earlier runs (25, then 80 rounds) changed penalized-model results and the MLP offsets; all numbers here use the stiffness-aware schedule above, and the earlier ``monotone EO'' and ``MLP is immune'' conclusions are withdrawn.
+
+\begin{table*}[t]
+\centering
+\caption{Main BRFSS results at $\lambda{=}8$ (logistic regression; mean $\pm$ std.\ over 20 seeds per scenario; rule~(q)). Lower is fairer. ``int'' = 4 age$\times$sex groups.}
+\label{tab:main}
+\begin{tabular}{lccccc}
+\toprule
+Method & AUROC & DP$_\text{sex}$ & DP$_\text{int}$ & EO$_\text{sex}$ & EO$_\text{int}$\\
+\midrule
+\input{tab_main.tex}
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,87 @@
+
+\subsection{Robustness checks}
+\label{sec:robust}
+\textbf{Leave-states-out, deployable threshold} (Table~\ref{tab:lso}; exploratory). With whole states held out and the threshold fixed from training scores, oversampling offsets are DP $-0.025$ [$-0.027,-0.021$], EO $+0.072$ [$+0.068,+0.077$] (natural) and DP $-0.002$ [$-0.008,+0.004$], EO $+0.010$ [$-0.015,+0.036$] (capped): the capped EO effect is not distinguishable from zero here. Label balancing reproduces the natural effect (EO $+0.050$) but not the capped one ($+0.017$ [$-0.007,+0.042$]); group re-weighting lowers EO in natural ($-0.006$ [$-0.008,-0.003$]) but not significantly in capped ($-0.005$ [$-0.013,+0.004$]).
+
+\textbf{Heterogeneous clients} (Tables~\ref{tab:dir}, \ref{tab:glob}). These offsets use the core-grid frontier (a chord that overstates natural-data EO offsets by 0.01--0.03; Table~\ref{tab:perlam}), so read the comparisons between federated and centralized values, not the absolute sizes. Real states are near-IID, so we re-partitioned the same training data. Under Dirichlet $\alpha{=}1$, oversampling behaves the same federated and centrally (EO $+0.073$ vs.\ $+0.064$, difference $+0.009$ [$-0.008,+0.023$]; DP $-0.021$ vs.\ $-0.018$), but group re-weighting with local counts does not: its EO offset is $+0.016$ [$+0.008,+0.026$] federated and $-0.005$ centrally (difference $+0.022$ [$+0.012,+0.032$]). Under $\alpha{=}0.3$ oversampling's EO effect is \emph{smaller} federated ($+0.012$ [$-0.012,+0.036$] vs.\ $+0.066$ centrally; difference $-0.055$ [$-0.077,-0.032$]) and local group re-weighting is harmful ($+0.027$ [$+0.009,+0.047]$ vs.\ $-0.005$; difference $+0.032$ [$+0.014,+0.053$]). The harm comes from the local weights: when each client weights groups by its own counts, a client missing a group assigns it very different weight than the pooled data would. Re-weighting with \emph{global} group counts (Table~\ref{tab:glob}; the grid of this suite is $\lambda\in\{1,4,8,16\}$, so values differ slightly from Table~\ref{tab:dir}) gives an EO offset of $-0.003$ [$-0.005,-0.001$] at $\alpha{=}1$ and $-0.008$ [$-0.012,-0.005$] at $\alpha{=}0.3$, against $+0.016$ and $+0.027$ for local counts. So local re-weighting is a federation-specific failure under skew, and it is repaired by four pooled counts; the repaired version gives a small EO gain of the size seen on near-IID BRFSS.
+
+Further checks on client size, age cut-off and shrinkage are in Appendix~\ref{app:robust}: the oversampling EO effect appears at every client size and for age cut-offs 65 and three bands but not 45, and shrinkage gives no benefit.
+
+\begin{table*}[t]
+\centering
+\caption{Leave-states-out, deployable threshold: offsets vs.\ the naive penalty on the core-grid chord (logistic regression, 10 natural / 20 capped partitions), mean [95\% CI]. Exploratory.}
+\label{tab:lso}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{Natural} & \multicolumn{2}{c}{Capped}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Variant & DP$_\text{int}$ & EO$_\text{int}$ & DP$_\text{int}$ & EO$_\text{int}$\\
+\midrule
+\input{tab2_lso.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Dirichlet-skewed client partitions of the same training data (10 seeds): offsets vs.\ the naive penalty on the core-grid chord (which overstates natural EO offsets, Sec.~\ref{sec:over}), rule~(q), mean [95\% CI]. Federated, centralized, and their paired difference. Exploratory.}
+\label{tab:dir}
+\scriptsize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccccc}
+\toprule
+& & \multicolumn{3}{c}{DP$_\text{int}$} & \multicolumn{3}{c}{EO$_\text{int}$}\\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Partition & Variant & Fed. & Central & Diff & Fed. & Central & Diff\\
+\midrule
+\input{tab2_dir.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{Group re-weighting with local vs.\ global group counts under Dirichlet partitions (federated, 10 seeds): offsets vs.\ naive penalty, mean [95\% CI]. Exploratory.}
+\label{tab:glob}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llcc}
+\toprule
+Partition & Weights & DP$_\text{int}$ & EO$_\text{int}$\\
+\midrule
+\input{tab3_glob.tex}
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\caption{Age cut-offs (exploratory). Offsets vs.\ the naive penalty of the same configuration at equal AUROC, mean [95\% CI].}
+\label{tab:rob}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+& \multicolumn{2}{c}{Natural (10 seeds)} & \multicolumn{2}{c}{Capped (20 seeds)}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Variant & DP$_\text{int}$ & EO$_\text{int}$ & DP$_\text{int}$ & EO$_\text{int}$\\
+\midrule
+\input{tab_rob.tex}
+\bottomrule
+\end{tabular}}
+\end{table*}
+
+\section{Discussion and Limitations}
+\textbf{Practice.} (1) Audit every attribute you will report on, and their crossings where cell sizes allow; a single-attribute audit passed a model with a 12$\times$ larger intersectional gap, while an audit of both marginals would not have: the sex-only model's age-marginal DP gap (0.154) equals FedAvg's (0.152) and is six times that of the marginal-both model (0.024; Table~\ref{tab:mask}). (2) Report DP, EO, sensitivity, PPV and calibration together, at more than one operating point; a fix can improve one while worsening another, and the gaps of an unconstrained model change severalfold with the selection rate. (3) Compare mitigations at equal AUROC and across penalty strengths: the EO gap is U-shaped in $\lambda$, and a group-threshold baseline that looks clearly better against a strong penalty only ties a weak one. (4) Do not credit a federated method for an effect a centralized control reproduces, and test it under client heterogeneity; local-count re-weighting is the one mitigation here that federation breaks. (5) Train to convergence, with a schedule matched to penalty stiffness; our own earlier under-trained runs gave different answers.
+
+\textbf{Privacy cost of thresholds.} Group thresholds need the sensitive attribute at decision time, and fitting them needs pooled group-wise scores: each client would have to share, per group, score quantiles or histograms with a server. With hospital-scale clients the cells are tiny (with 150 respondents per client, the younger-women cell holds on the order of 40 respondents and about one positive on average), so the shared statistics can approach patient-level information, and a secure-aggregation or differentially private histogram would add noise to exactly the small groups the thresholds are meant to protect. We fitted thresholds centrally on training scores or on a pooled validation split, and did not measure the privacy--accuracy cost of a federated estimator; we therefore make no claim about what a private federated procedure would achieve.
+
+\textbf{Limitations.} (1) \emph{Data.} One self-reported US survey with near-IID states \cite{obermeyer2019}; federated claims under skew rest on synthetic Dirichlet partitions; two binary attributes only, so the value of crossing three or more attributes (for example race or income, which the cleaned extract used here does not contain) is untested and is future work; the marginal-sufficiency result may not carry over. (2) \emph{Models.} Logistic regression and a 16-unit MLP whose penalized training is optimization-sensitive (Sec.~\ref{sec:mlp}); MLP results are exploratory. FairFed, FedIDA and exponentiated gradient are not benchmarked here. (3) \emph{Convergence.} The schedule is chosen by penalty stiffness and checked against half the rate and twice the rounds on a subset of seeds and arms (Appendix~\ref{app:conv}), not for every run. (4) \emph{Statistics.} Seeds are random splits of one dataset (5--20 per suite, listed in each caption); the Holm-adjusted floor is 0.047 for 10 seeds, and with 5 seeds (MLP natural) no test can be significant, so small effects there are inconclusive rather than absent; exploratory tests are uncorrected. (5) \emph{Metrics.} DP is a parity audit, not a clinical objective; gaps depend on the operating point (Sec.~\ref{sec:op}) and, for offsets, on the $\lambda$ grid; $\lambda$ is swept, not tuned. (6) \emph{Thresholds.} They use the sensitive attribute at decision time, and the cost of estimating them privately is unmeasured.
+
+\section{Conclusion}
+A sex-only audit passes models whose age$\times$sex gaps remain large, but penalizing both marginals closes them about as well as penalizing the cross. In natural data penalties cost about 0.12 AUROC and 30\% of sensitivity at $\lambda{=}8$, and 0.05 AUROC at the EO-optimal $\lambda{=}0.5$ (sensitivity loss at weak penalties: 0.231 against 0.310 for FedAvg at $\lambda{=}1$); the EO gap is smallest at weak penalties, where the penalty ties with group-specific thresholds that cost nothing in ranking but need the sensitive attribute and lower predictive value in some groups. Local oversampling's DP/EO shift at equal AUROC is partly (49--90\% of the EO shift, depending on the setting) a class-rebalancing effect, is reproduced by a centralized control and is significant only in natural-size clients; its miscalibration is a fixable prior shift. Group re-weighting with local counts fails under skewed clients and global counts repair it. The practical contribution is an evaluation protocol: group-wise and marginal audits, DP and EO with sensitivity and PPV, equal accuracy over several penalty strengths, several operating points, a thresholding baseline, a centralized control, held-out states and convergence checks.
+
+\appendices

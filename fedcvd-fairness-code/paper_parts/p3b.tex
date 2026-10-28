@@ -1,0 +1,33 @@
+\section{Additional robustness checks}
+\label{app:robust}
+\textbf{Client size and age cut-off.} The oversampling EO effect appears at every client size (EO $+0.029$ [$+0.004,+0.052$] at $n{=}75$, $+0.032$ [$0.000,+0.062$] at 150, $+0.040$ [$+0.014,+0.063$] at 300, $+0.071$ natural), so it is not an artifact of tiny cells. It is absent for an age cut-off of 45 (EO $+0.003$ [$-0.005,+0.011$] natural, $+0.000$ [$-0.007,+0.007$] capped) and present for 65 ($+0.096$, $+0.056$) and for three age bands ($+0.090$; capped $+0.027$ [$-0.001,+0.055$]) (Table~\ref{tab:rob}). The offset rises with the cut-off in both settings, which fits the larger prevalence spread at higher cut-offs, but this is three points and we claim no mechanism.
+
+\textbf{Shrinkage gives no benefit.} Offsets are 0.000 in natural data (every client--group cell is large, so shrinkage is numerically the naive penalty) and, in capped data, DP $-0.002$ [$-0.003,-0.001$] with EO $+0.005$ [$+0.003,+0.007$] (leave-states-out: $+0.006$ [$+0.003,+0.008$]): a statistically detectable but practically negligible \emph{worsening} of EO. We report it as no benefit, not as a null.
+
+
+
+\section{Convergence of penalized models}
+\label{app:conv}
+For each penalty type and $\lambda\in\{1,8,16\}$ we compared the production schedule of Sec.~III-A with half the learning rate and twice the rounds, without the divergence guard (Table~\ref{tab:conv}; absolute differences, mean over settings; capped seeds 42--46 for all arms; natural seeds 42--46 for intersectional, oversampling, label-balance and group re-weighting at $\lambda\in\{8,16\}$ and for the EO penalty at $\lambda\in\{1,8\}$). In natural data, the setting that carries the headline oversampling result, the schedule does not matter: the largest EO difference over 40 DP-type and 10 EO-penalty comparisons is 0.005 and 0.007, an order of magnitude below the effect sizes (0.03--0.07). The sex-only, age-only and marginal-both arms were checked in capped data only. For the DP-type penalties the mean differences are small (capped: AUROC 0.002, DP 0.003, EO 0.009; oversampling alone 0.006, 0.006 and 0.020, the other DP-type arms 0.001, 0.002 and 0.007) but not negligible per seed: the largest EO difference is 0.111, for oversampling at $\lambda\ge 8$, where the production schedule gave the higher EO. For the EO penalty the schedule matters: unguarded, two fits (seed 45, $\lambda{=}8$ and 16) collapsed to AUROC 0.50, which alone puts the mean differences at 0.03 AUROC and 0.13 in DP and EO (maximum 0.74); without them the means are 0.004 AUROC, 0.019 DP and 0.031 EO, so the EO penalty is more schedule-sensitive than the DP-type penalties (0.003 DP, 0.009 EO). Converged-schedule results for the EO penalty at $\lambda\ge 8$ are therefore indicative only.
+
+\begin{table}[h]
+\centering
+\caption{Production schedule vs.\ half learning rate / double rounds (unguarded): mean absolute difference in AUROC, DP$_\text{int}$, EO$_\text{int}$; $n$ = settings; last column: largest EO difference.}
+\label{tab:conv}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{\input{tab3_conv2.tex}}
+\end{table}
+
+\section{Exponentiated-gradient reference}
+\label{app:eg}
+We ran an exponentiated-gradient reduction \cite{agarwal2018} with class-balanced error (plain 0--1 error collapses to an all-negative classifier at 9.3\% prevalence), DP or EO constraints on the four groups and $\epsilon\in\{0.05,0.02,0.01\}$, centralized on pooled training data (30K-row subsample in the natural setting; class balancing by resampling for Fairlearn, by weights for our own implementation). We report two implementations, our own and Fairlearn 0.15 (run by the authors externally). Both output a randomized classifier, and we report its expected rates. The per-$\epsilon$ results (24 rows; released with the code) are illustrative only: the objective is class-balanced, so the classifier selects about 38--44\% of respondents (prevalence 9.3\%) and operates far from the 9.3\% rule used elsewhere, and its AUROC is that of the mixture score. The two implementations disagree (natural, DP constraint at $\epsilon{=}0.01$: EO$_\text{int}$ 0.118 versus 0.210). We did not investigate the cause; the oracle, the number of iterations, the Lagrange-multiplier bound and class balancing by weights versus resampling all differ, and a randomized mixture is sensitive to them. EG numbers should therefore not be used as a benchmark here. We draw no comparison with the other methods.
+
+
+\section{UCI Heart Disease (secondary, 851 patients)}
+\label{app:uci}
+On UCI (four hospitals; stratified 5-fold CV repeated 20 times; rule (q); bootstrap CIs over patients; the same stiffness-aware training schedule and guard as for BRFSS) the sex-only model at $\lambda{=}8$ reduces sex DP and EO by 63\% and 75\% but age$\times$sex gaps by 32\% and 33\% (FedAvg AUROC 0.878, sex-only 0.852). Oversampling offsets are not reported: its AUROC at $\lambda{=}8$ (0.736) is far below the naive penalty's (0.829), so offsets would rest on two frontier points. With subgroup cells of 2--6 patients per client, UCI is too small to discriminate mechanisms; its intervals omit training variability.
+
+\section*{Reproducibility}
+Code, cleaned BRFSS/UCI tables and per-seed results for every table are provided. Experiments: \texttt{run\_brfss.py}, \texttt{run2.py}, \texttt{engine.py}, \texttt{fairlearn\_eg.py}, \texttt{run\_uci\_v3.py} (UCI), \texttt{agegap.py}, \texttt{agecoef.py}, \texttt{convcheck2.py}, \texttt{convcheck3.py}, \texttt{convcheck4.py}; batch scripts \texttt{run6.sh}--\texttt{run16.sh} (run with \texttt{CONV=2} where noted). Tables and figures: \texttt{analysis.py}, \texttt{analysis2.py}, \texttt{make\_results.py}, \texttt{make\_tables.py}, \texttt{make\_tables2.py}, \texttt{nums3.py}, \texttt{nums4.py}, \texttt{nums5.py}, \texttt{dense.py}, \texttt{fig\_dense.py}, \texttt{checks3.py} (verifies numbers quoted in the text). Seeds per suite are listed in Table~\ref{tab:seeds}. Code URL: to be added at submission.
+
