@@ -34,6 +34,10 @@ def central_vs_fed(scen):
     if scen == "natural":  # dense frontier: add lambda = 0.5, 2 (federated and centralized, same seeds)
         c = pd.concat([c, pd.read_csv("res4/centdense_natural.csv")])
         f = pd.concat([f, pd.read_csv("res4/dense_natural.csv")]).drop_duplicates(["seed", "method", "lam"])
+    if scen == "capped":  # dense frontier: add lambda = 0.5 (federated dense05 suite and centralized centdense suite, same seeds)
+        c = pd.concat([c, pd.read_csv("res4/centdense_capped.csv")])
+        f = pd.concat([f, pd.read_csv("res4/dense05_capped.csv")]).drop_duplicates(["seed", "method", "lam"])
+    c = c.drop_duplicates(["seed", "method", "lam"])
     rows = []
     for m in ["oversample", "over_label", "w_group"]:
         for met in ["DP_int", "EO_int"]:

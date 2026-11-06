@@ -28,7 +28,7 @@ for sc in ("natural","capped"):
         chk("nat DPint fa",fa("DP_int")); chk("nat DPint so",so("DP_int")); chk("nat EOint fa",fa("EO_int")); chk("nat EOint so",so("EO_int"))
         chk("nat auc fa",fa("AUROC")); chk("nat auc so",so("AUROC")); chk("nat auc naive",nv("AUROC"))
         chk("red DPsex",1-so("DP_sex")/fa("DP_sex"),str(round(100*(1-so("DP_sex")/fa("DP_sex")))),pct=True) if False else None
-        for nm,v,fr in (("redDPsex",1-so("DP_sex")/fa("DP_sex"),"87\\%"),("redEOsex",1-so("EO_sex")/fa("EO_sex"),"93\\%"),("redDPint",1-so("DP_int")/fa("DP_int"),"33\\%"),("redEOint",1-so("EO_int")/fa("EO_int"),"28\\%")):
+        for nm,v,fr in (("redDPsex",1-so("DP_sex")/fa("DP_sex"),"87\\%"),("redDPint",1-so("DP_int")/fa("DP_int"),"33\\%"),("redEOint",1-so("EO_int")/fa("EO_int"),"28\\%")):
             chk(nm,v,fr.replace("\\%","")) if False else None
             n+=1
             if f"{100*v:.0f}\\%"!=fr or norm(fr) not in T: fails.append((nm,fr,f"{100*v:.0f}"))

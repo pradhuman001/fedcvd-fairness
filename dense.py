@@ -20,9 +20,13 @@ for k,v in out.items():
 def cell(k):
     v=out[k]; f=lambda x:(f"{x:+.3f}").replace("-","$-$")
     return f"{f(v['mean'])} [{f(v['lo'])}, {f(v['hi'])}]"
+H=json.load(open("paper/holm_all.json"))
+def hc(m,met):
+    v=H[f"LR|capped|{m}|{met}"]; f=lambda x:(f"{x:+.3f}").replace("-","$-$")
+    return f"{f(v['mean'])} [{f(v['lo'])}, {f(v['hi'])}]"
 t=open("paper/tab_ctl.tex").read()
 if "dense" not in t:
-    rows=[f"Oversample, dense natural grid & {cell('dense|oversample|DP_int')} & {cell('dense|oversample|EO_int')} & -- & -- \\\\",
-          f"Label-balance, dense natural grid & {cell('dense|over_label|DP_int')} & {cell('dense|over_label|EO_int')} & -- & -- \\\\",
-          f"Loss reweight: groups only, dense natural grid & {cell('dense|w_group|DP_int')} & {cell('dense|w_group|EO_int')} & -- & -- \\\\"]
+    rows=[f"Oversample, dense grid & {cell('dense|oversample|DP_int')} & {cell('dense|oversample|EO_int')} & {hc('oversample','DP_int')} & {hc('oversample','EO_int')} \\\\",
+          f"Label-balance, dense grid & {cell('dense|over_label|DP_int')} & {cell('dense|over_label|EO_int')} & {hc('over_label','DP_int')} & {hc('over_label','EO_int')} \\\\",
+          f"Loss reweight: groups only, dense grid & {cell('dense|w_group|DP_int')} & {cell('dense|w_group|EO_int')} & {hc('w_group','DP_int')} & {hc('w_group','EO_int')} \\\\"]
     open("paper/tab_ctl.tex","w").write(t.rstrip("\n")+"\n"+"\n".join(rows))
