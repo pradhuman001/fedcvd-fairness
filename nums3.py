@@ -67,7 +67,13 @@ for s,nm in (("dir03","Dirichlet $\\alpha{=}1$"),("dir","Dirichlet $\\alpha{=}0.
     for m,mn in (("w_group","local group counts"),("w_group_glob","global group counts")):
         r=[B.offs_ci(d,m,met) for met in ("DP_int","EO_int")]
         N[f"glob|{s}|{m}"]=r
-        L.append(f"{nm} & {mn} & {ci(r[0])} & {ci(r[1])} \\\\")
+        cd=pd.read_csv(f"res4/centsub_{s}.csv")  # centralized w_group = pooled counts (local == global weights)
+        df=[]
+        for met in ("DP_int","EO_int"):
+            pf=B.per_seed_offsets(d,m,met); pc=B.per_seed_offsets(cd,"w_group",met); sd=sorted(set(pf)&set(pc))
+            df.append(A.ci_boot([pf[x]-pc[x] for x in sd]))
+        N[f"glob|{s}|{m}|diff"]=df
+        L.append(f"{nm} & {mn} & {ci(r[0])} & {ci(r[1])} & {ci(df[0])} & {ci(df[1])} \\\\")
 open("paper/tab3_glob.tex","w").write("\n".join(L))
 # G group-wise AUROC/CITL
 o=json.load(open("res4/opts.json")); L=[]
